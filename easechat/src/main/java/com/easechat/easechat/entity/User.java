@@ -2,12 +2,14 @@ package com.easechat.easechat.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.easechat.easechat.enmus.Gender;
 import com.easechat.easechat.enmus.Role;
 import lombok.Data;
 
 @Data
-public abstract class User {
+@TableName("user")
+public class User {
 
     @TableId(type = IdType.AUTO)
     private Integer id;
@@ -24,7 +26,7 @@ public abstract class User {
 
     private String icon;
 
-    private String introduction;
+    private String remark;
 
     private Gender gender;
 

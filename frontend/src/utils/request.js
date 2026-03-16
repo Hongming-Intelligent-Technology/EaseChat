@@ -1,9 +1,10 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import {ElMessage} from 'element-plus'
 
 const service = axios.create({
-  baseURL: '/api', 
-  timeout: 5000
+  baseURL: '/api',
+  timeout: 5000,
+  withCredentials: true
 })
 
 service.interceptors.response.use(

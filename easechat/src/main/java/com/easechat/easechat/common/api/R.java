@@ -13,16 +13,8 @@ public class R<T> implements Serializable {
 
     private String msg;
 
-    private R(IResultCode resultCode) {
-        this(resultCode, (T) null, resultCode.getMessage());
-    }
-
     private R(IResultCode resultCode, String msg) {
-        this(resultCode, (T) null, msg);
-    }
-
-    private R(IResultCode resultCode, T data, String msg) {
-        this(resultCode.getCode(), data, msg);
+        this(resultCode.getCode(), null, msg);
     }
 
     private R(int code, T data, String msg) {
@@ -33,7 +25,7 @@ public class R<T> implements Serializable {
     }
 
     public static <T> R<T> data(T data) {
-        return data(data, "操作成功");
+        return data(data, "Operation successful");
     }
 
     public static <T> R<T> data(T data, String msg) {
@@ -41,15 +33,15 @@ public class R<T> implements Serializable {
     }
 
     public static <T> R<T> data(int code, T data, String msg) {
-        return new R(code, data, data == null ? "暂无承载数据" : msg);
+        return new R<>(code, data, data == null ? "No data available" : msg);
     }
 
     public static <T> R<T> success(String msg) {
-        return new R(ResultCode.SUCCESS, msg);
+        return new R<>(ResultCode.SUCCESS, msg);
     }
 
     public static <T> R<T> fail(String msg) {
-        return new R(ResultCode.FAILURE, msg);
+        return new R<>(ResultCode.FAILURE, msg);
     }
 
     public int getCode() {

@@ -5,12 +5,12 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
-// 引入你上传的 CSS (建议将 common.css 内容放入 assets/css/common.css)
+// Import CSS files
 import './assets/css/common.css' 
 
 const app = createApp(App)
 
-// 注册所有图标
+// Register all icons
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }

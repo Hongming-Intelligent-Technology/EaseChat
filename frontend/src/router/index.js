@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import {createRouter, createWebHistory} from 'vue-router'
 
 const routes = [
   {
@@ -15,6 +15,11 @@ const routes = [
     path: '/',
     name: 'Home',
     component: () => import('../views/Home.vue')
+  },
+  {
+    path: '/chat',
+    name: 'Chat',
+    component: () => import('../views/Chat.vue')
   }
 ]
 
@@ -23,9 +28,9 @@ const router = createRouter({
   routes
 })
 
-// 简单的路由守卫示例（根据需求开启）
+// Simple route guard example (enable as needed)
 // router.beforeEach((to, from, next) => {
-//   const isAuthenticated = localStorage.getItem('user'); // 假设登录存了localstorage
+//   const isAuthenticated = localStorage.getItem('user'); // Assuming login info is saved in localStorage
 //   if (to.name !== 'Login' && to.name !== 'Register' && !isAuthenticated) next({ name: 'Login' })
 //   else next()
 // })

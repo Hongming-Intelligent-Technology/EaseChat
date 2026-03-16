@@ -1,50 +1,36 @@
 <template>
-  <div class="login-wrapper">
-    <div class="login-content">
-      <div class="title">EaseChat - Login</div>
-      <div style="width: 80%; margin: 0 auto;">
-        <el-input placeholder="账号" v-model="account">
+  <div class="auth-page">
+    <div class="auth-card ease-card">
+      <div class="auth-badge">EaseChat</div>
+      <h1 class="auth-title ease-title">Welcome Back</h1>
+      <p class="auth-sub">Sign in to continue the conversation.</p>
+      <div class="auth-form">
+        <el-input placeholder="Account" v-model="account">
           <template #prefix>
             <el-icon>
-              <User />
+              <User/>
             </el-icon>
           </template>
         </el-input>
-      </div>
-      <div style="width: 80%; margin: 0 auto; margin-top: 20px;">
-        <el-input placeholder="密码" type="password" v-model="password">
+        <el-input placeholder="Password" type="password" v-model="password">
           <template #prefix>
             <el-icon>
-              <Lock />
+              <Lock/>
             </el-icon>
           </template>
         </el-input>
+        <el-button @click="handlerLogin" type="primary" class="auth-primary">Login</el-button>
+        <el-button @click="handlerRegister" class="auth-secondary">Go to Register</el-button>
       </div>
-
-      <div style="width: 80%; margin: 0 auto; margin-top: 20px;">
-        <el-button @click="handlerLogin" style="width: 100%; font-size: 20px;" type="primary">登录</el-button>
-      </div>
-
-      <div style="width: 80%; margin: 0 auto; margin-top: 20px;">
-        <el-button @click="handlerRegister" style="width: 100%; font-size: 20px;">去注册</el-button>
-      </div>
-
-      <div class="line-left-top top-line"></div>
-      <div class="line-left-top left-line"></div>
-      <div class="line-right-top top-line"></div>
-      <div class="line-right-top right-line"></div>
-      <div class="line-left-bottom top-line"></div>
-      <div class="line-left-bottom left-line"></div>
-      <div class="line-right-bottom top-line"></div>
-      <div class="line-right-bottom right-line"></div>
     </div>
+    <div class="auth-glow"></div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import {ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {ElMessage} from 'element-plus'
 import request from '../utils/request'
 
 const router = useRouter()
@@ -57,15 +43,15 @@ const handlerRegister = () => {
 
 const handlerLogin = () => {
   if (!account.value) {
-    ElMessage.warning("请输入账号")
+    ElMessage.warning("Please enter your account")
     return
   }
   if (!password.value) {
-    ElMessage.warning("请输入密码")
+    ElMessage.warning("Please enter your password")
     return
   }
 
-  const params = { account: account.value, password: password.value }
+  const params = {account: account.value, password: password.value}
 
   request.post("/user/login", params).then((res) => {
     const data = res.data
@@ -74,7 +60,7 @@ const handlerLogin = () => {
       return
     }
     ElMessage.success(data.msg)
-    // 简单处理，通常需要保存 token
+    // Simply handle, usually need to save token
     setTimeout(() => {
       router.push('/')
     }, 800)
@@ -83,72 +69,57 @@ const handlerLogin = () => {
 </script>
 
 <style scoped>
-.login-wrapper {
-  display: flex;
-  justify-content: end;
-  background-image: url("@/assets/img/img.png");
-  background-size: 100% 100%;
-  height: 100vh;
-  align-items: center;
-}
-
-.login-content {
-  width: 400px;
-  height: 420px;
-  background: rgba(0, 0, 0, 0.3);
-  margin-right: 300px;
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
   position: relative;
+  overflow: hidden;
 }
 
-.title {
-  height: 100px;
-  line-height: 100px;
-  text-align: center;
-  color: white;
+.auth-card {
+  width: min(420px, 90vw);
+  padding: 36px 32px;
+  position: relative;
+  z-index: 2;
+}
+
+.auth-badge {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: var(--ease-accent);
+  font-size: 12px;
+}
+
+.auth-title {
+  margin: 10px 0 6px;
   font-size: 30px;
-  font-family: 楷体;
 }
 
-/* 线条样式 */
-.top-line {
-  background: #409eff;
-  width: 30px;
-  height: 3px;
+.auth-sub {
+  color: var(--ease-muted);
+  margin-bottom: 24px;
 }
 
-.left-line {
-  background: #409eff;
-  width: 3px;
-  height: 30px;
+.auth-form {
+  display: grid;
+  gap: 16px;
 }
 
-.right-line {
-  background: #409eff;
-  width: 3px;
-  height: 30px;
+.auth-primary,
+.auth-secondary {
+  width: 100%;
 }
 
-.line-left-top {
+.auth-glow {
   position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.line-right-top {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.line-left-bottom {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-}
-
-.line-right-bottom {
-  position: absolute;
-  right: 0;
-  bottom: 0;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.25), rgba(255, 255, 255, 0));
+  top: 10%;
+  right: 10%;
+  filter: blur(0px);
+  z-index: 1;
 }
 </style>

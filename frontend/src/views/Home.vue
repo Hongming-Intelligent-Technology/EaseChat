@@ -1,484 +1,497 @@
 <template>
-  <div class="main-box">
-    <div class="main-item-box">
-      <div style="width: 300px; border-right: 1px solid #c0c0c0; display: flex; flex-flow: column;">
-        <div style="display: flex; justify-content: center; margin-top: 30px;">
-          <img v-if="user.icon" :src="user.icon" class="avatar icon">
-        </div>
-        <div style="text-align: center; margin-top: 20px; display: flex; justify-content: space-around;">
-          <div>账号： {{ user.account }}</div>
-          <div>
-            <el-button @click="toDetail" size="small" type="warning">详情</el-button>
-            <el-button @click="loginOut" size="small" type="danger">退出</el-button>
-          </div>
-        </div>
-        <div style="padding: 10px; box-sizing: border-box; flex: 1; overflow: hidden;">
-          <el-tabs type="card" class="sidebar-tabs">
-            <el-tab-pane label="聊天室中心">
-              <div class="userList">
-                <el-card @click="showRoom(item)" shadow="hover" style="margin-bottom: 10px; cursor: pointer;"
-                  v-for="item in roomData" :key="item.id">
-                  <div style="display: flex;">{{ item.name }}</div>
-                </el-card>
-                <el-empty v-if="roomData.length === 0" description="暂无聊天室" />
-              </div>
-            </el-tab-pane>
-            <el-tab-pane label="我的聊天室">
-              <div class="userList">
-                <el-button @click="handlerShowEditRoom" size="small" type="primary"
-                  style="width: 100%; margin-bottom: 10px;">
-                  新增
-                </el-button>
-                <el-card @click="showRoom(item)" shadow="hover" style="margin-bottom: 10px; cursor: pointer;"
-                  v-for="item in selfRoom" :key="item.id">
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>{{ item.name }}</div>
-                    <el-button @click.stop="handlerDelete(item)" size="small" type="warning">删除</el-button>
-                  </div>
-                </el-card>
-                <el-empty v-if="selfRoom.length === 0" description="暂无创建" />
-              </div>
-            </el-tab-pane>
-          </el-tabs>
-        </div>
-      </div>
-
-      <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-
-        <div v-if="showDetail" style="flex: 1; padding: 20px; overflow-y: auto;">
-          <div v-if="showEdit" style="width: 500px; margin: 0 auto;">
-            <div style="display: flex; justify-content: center; margin: 30px auto; position:relative;">
-              <div style="position: absolute; top: 0px; right: 140px; cursor: pointer" @click="removeIcon">
-                <el-icon color="#F56C6C" size="20">
-                  <CircleCloseFilled />
-                </el-icon>
-              </div>
-              <el-upload class="avatar-uploader" action="/api/file/upload" :show-file-list="false"
-                :on-success="handleUploadIcon">
-                <img v-if="updateUser.icon" :src="updateUser.icon" class="avatar icon">
-                <el-icon v-else class="avatar-uploader-icon">
-                  <Plus />
-                </el-icon>
-              </el-upload>
-            </div>
-            <div style="margin-top: 20px;">
-              <el-input placeholder="账号" disabled v-model="updateUser.account"></el-input>
-            </div>
-            <div style="margin-top: 20px;">
-              <el-input placeholder="密码" type="password" v-model="updateUser.password"></el-input>
-            </div>
-            <div style="margin-top: 20px;">
-              <el-input placeholder="个人简介" type="textarea" :rows="4" resize="none"
-                v-model="updateUser.remark"></el-input>
-            </div>
-          </div>
-          <div v-else>
-            <div style="display: flex; justify-content: center; margin-top: 100px;">
-              <img v-if="user.icon" :src="user.icon" class="avatar icon">
-            </div>
-            <div style="text-align: center; margin-top: 20px;">
-              <div>账号： {{ user.account }}</div>
-            </div>
-            <div style="text-align: center; margin-top: 20px;">
-              <div>个人简介：{{ user.remark || '暂无个人简介' }}</div>
-            </div>
-          </div>
-          <div style="display: flex; justify-content: center; margin-top: 50px;">
-            <el-button @click="handlerEdit" type="primary">{{ showEdit ? '保存' : '去编辑' }}</el-button>
-            <el-button @click="toHandlerClose" type="danger">{{ showEdit ? '返回' : '关闭' }}</el-button>
-          </div>
-        </div>
-
-        <div v-else style="flex: 1; display: flex; flex-direction: column; height: 100%;">
-          <div v-if="!selectRoom.name"
-            style="height: 100%; display: flex; justify-content: center; align-items: center;">
-            <el-empty description="请选择聊天室" />
-          </div>
-
-          <div v-if="selectRoom.name" style="height: 100%; display: flex; flex-direction: column;">
-            <el-card shadow="never" :body-style="{ padding: '15px' }">
-              <div style="font-size: 20px;">聊天室：{{ selectRoom.name }}</div>
-            </el-card>
-
-            <div class="chat-content" ref="chatContainer">
-              <div v-if="commentData.length === 0"
-                style="display: flex; justify-content: center; height: 100%; align-items: center;">
-                <el-empty description="暂无消息"></el-empty>
-              </div>
-              <div v-for="(item, index) in commentData" :key="index" style="display: flex; margin-top: 10px;">
-                <div v-if="user.account === item.account" style="display: flex; justify-content: end; width: 100%">
-                  <div
-                    style="display: flex; justify-content: end; background: #FFFFFF; padding: 10px; border-radius: 8px;">
-                    <div style="margin-right: 15px; text-align: right;">
-                      <div style="color: #c0c0c0; font-size: 12px;">{{ item.createTime }}</div>
-                      <div v-if="item.type === 'txt'" style="margin-top: 5px;">{{ item.content }}</div>
-                      <div v-if="item.type === 'img'" style="margin-top: 5px;">
-                        <el-image :src="item.content" style="height: 100px" :preview-src-list="[item.content]" />
-                      </div>
-                      <div v-if="item.type === 'music'" style="margin-top: 5px;">
-                        <audio controls preload="auto">
-                          <source :src="item.content" type="audio/mpeg">
-                        </audio>
-                      </div>
-                    </div>
-                    <div>
-                      <img v-if="item.icon" class="friendUser" :src="item.icon" />
-                      <el-avatar v-else>{{ item.account }}</el-avatar>
-                    </div>
-                  </div>
-                </div>
-                <div v-else style="display: flex; justify-content: start; width: 100%;">
-                  <div
-                    style="display: flex; justify-content: start; background: #FFFFFF; padding: 10px; border-radius: 8px;">
-                    <div>
-                      <img v-if="item.icon" class="friendUser" :src="item.icon" />
-                      <el-avatar v-else>{{ item.account }}</el-avatar>
-                    </div>
-                    <div style="margin-left: 15px;">
-                      <div style="color: #c0c0c0; font-size: 12px;">{{ item.createTime }}</div>
-                      <div v-if="item.type === 'txt'">{{ item.content }}</div>
-                      <div v-if="item.type === 'img'">
-                        <el-image :src="item.content" style="height: 100px" :preview-src-list="[item.content]" />
-                      </div>
-                      <div v-if="item.type === 'music'" style="margin-top: 10px;">
-                        <audio controls preload="auto">
-                          <source :src="item.content" type="audio/mpeg">
-                        </audio>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div style="padding: 10px; background: #fff; border-top: 1px solid #eee;">
-              <div style="display: flex; gap: 10px;">
-                <el-input placeholder="请输入内容" v-model="content" @keyup.enter="sendHandler"></el-input>
-                <el-button @click="sendHandler" type="primary" :icon="Pointer">发送</el-button>
-                <el-upload action="/api/file/upload" :show-file-list="false" :on-success="handleUploadChat">
-                  <el-button type="success" :icon="Picture" circle></el-button>
-                </el-upload>
-                <el-button @click="sendMusicHandler" type="warning" :icon="Headset" circle></el-button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <el-dialog title="录音" v-model="sendMusic" width="400px" :before-close="cancelMusic">
-      <div style="text-align: center; font-size: 20px; padding: 20px;">
-        <div class="recording-animation">录音中...</div>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="cancelMusic">取消</el-button>
-          <el-button type="primary" @click="handlerSubmitMusic">发送</el-button>
-        </span>
+  <div class="feed-page">
+    <div class="feed-backdrop"></div>
+    <AppHeader
+      title="Community Posts"
+      :user="user"
+      @logout="loadUser"
+    >
+      <template #actions>
+        <el-button type="primary" @click="openCompose">New Post</el-button>
+        <el-button type="primary" @click="goChat">Chat</el-button>
       </template>
+    </AppHeader>
+
+    <main class="feed-content">
+      <section class="feed">
+        <div class="feed-title">Latest Posts</div>
+        <div v-if="loading" class="feed-loading">Loading...</div>
+        <div v-else>
+          <div v-if="posts.length === 0" class="feed-empty">
+            <el-empty description="No posts yet"/>
+          </div>
+          <div v-else class="feed-grid">
+            <article v-for="item in posts" :key="item.id" class="post-card">
+              <div class="post-cover" v-if="item.picture">
+                <img :src="item.picture" alt="cover"/>
+              </div>
+              <div v-else class="post-cover-empty">
+                <div class="cover-pattern"></div>
+              </div>
+              <div class="post-body">
+                <div class="post-title">{{ item.title || 'Untitled' }}</div>
+                <div class="post-meta">
+                  <span>{{ item.author || item.account || 'Anonymous' }}</span>
+                  <span class="dot"></span>
+                  <span>{{ item.createTime }}</span>
+                </div>
+                <div class="post-actions">
+                  <el-button text type="primary" @click="previewPost(item)">Preview</el-button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <el-dialog v-model="previewVisible" title="Post Preview" width="600px">
+      <div class="preview-body">
+        <img v-if="preview.picture" :src="preview.picture" class="preview-image"/>
+        <div class="preview-title">{{ preview.title || 'Untitled' }}</div>
+        <div class="preview-meta">
+          {{ preview.author || preview.account || 'Anonymous' }} | {{ preview.createTime || '' }}
+        </div>
+      </div>
     </el-dialog>
 
-    <el-dialog title="新增聊天室" v-model="showRoomFlag" width="400px">
-      <el-form :model="roomForm" :rules="rules" ref="roomFormRef" label-width="100px">
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="roomForm.name" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="showRoomFlag = false">取消</el-button>
-          <el-button type="primary" @click="handlerSubmitRoom">确认</el-button>
-        </span>
-      </template>
+    <el-dialog v-model="composeVisible" title="Create a Post" width="520px">
+      <div class="compose-card">
+        <div class="panel-sub">Share something worth reading today.</div>
+        <el-form label-position="top" class="compose-form">
+          <el-form-item label="Title">
+            <el-input v-model="postForm.title" maxlength="80" show-word-limit
+                      placeholder="A clear, bold title"/>
+          </el-form-item>
+          <el-form-item label="Author">
+            <el-input v-model="postForm.author" placeholder="Display name"/>
+          </el-form-item>
+          <el-form-item label="Cover Image">
+            <div class="cover-row">
+              <el-upload action="/api/file/upload" :show-file-list="false" :with-credentials="true"
+                         :on-success="handleUploadCover">
+                <el-button size="small" type="primary" plain>Upload</el-button>
+              </el-upload>
+              <img v-if="postForm.picture" :src="postForm.picture" alt="Cover" class="cover-thumb"/>
+            </div>
+          </el-form-item>
+        </el-form>
+        <div class="compose-actions">
+          <el-button @click="composeVisible = false">Cancel</el-button>
+          <el-button type="primary" @click="submitPost" :loading="saving">Publish</el-button>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Pointer, Picture, Headset, Plus, CircleCloseFilled } from '@element-plus/icons-vue'
+import {ref, reactive, onMounted} from 'vue'
+import {useRouter} from 'vue-router'
+import {ElMessage} from 'element-plus'
+import AppHeader from '../components/AppHeader.vue'
 import request from '../utils/request'
 
 const router = useRouter()
 
-// 状态变量
 const user = ref({})
-const updateUser = ref({})
-const showEdit = ref(false)
-const showDetail = ref(false)
-const sendMusic = ref(false)
-const content = ref("")
-const roomData = ref([])
-const selfRoom = ref([])
-const commentData = ref([])
-const selectRoom = ref({})
-const showRoomFlag = ref(false)
-const roomForm = ref({})
-const roomFormRef = ref(null)
-const chatContainer = ref(null)
+const posts = ref([])
+const loading = ref(false)
+const saving = ref(false)
+const previewVisible = ref(false)
+const preview = ref({})
+const composeVisible = ref(false)
 
-// 录音相关
-let mediaRecorder = null
-let recordedBlobs = []
+const postForm = reactive({
+  title: '',
+  author: '',
+  picture: ''
+})
 
-const rules = {
-  name: [{ required: true, message: '请输入聊天室名称', trigger: 'blur' }]
-}
-
-// 轮询定时器
-let timer = null
-
-// 方法
-const removeIcon = () => {
-  updateUser.value.icon = null
-}
-
-const handlerEdit = () => {
-  if (!showEdit.value) {
-    showEdit.value = true
+const handleUploadCover = (res) => {
+  if (res.code !== 200) {
+    ElMessage.warning('File upload failed')
     return
   }
-  if (!updateUser.value.password) {
-    ElMessage.warning("请输入密码")
+  postForm.picture = res.data
+}
+
+const openCompose = () => {
+  composeVisible.value = true
+}
+
+const loadUser = () => {
+  request.get('/user/current').then(res => {
+    if (res.data.code !== 200) {
+      ElMessage.warning('User not logged in')
+      setTimeout(() => router.push('/login'), 800)
+      return
+    }
+    user.value = res.data.data
+    if (!postForm.author) {
+      postForm.author = user.value.account || ''
+    }
+  })
+}
+
+const loadPosts = () => {
+  loading.value = true
+  request.get('/blog/list').then(res => {
+    posts.value = res.data.data || []
+  }).finally(() => {
+    loading.value = false
+  })
+}
+
+const submitPost = () => {
+  if (!postForm.title) {
+    ElMessage.warning('Please enter a title')
     return
   }
-  request.post("/user/update", updateUser.value).then(res => {
+  const payload = {
+    title: postForm.title,
+    author: postForm.author || user.value.account || '',
+    picture: postForm.picture
+  }
+  saving.value = true
+  request.post('/blog/save', payload).then(res => {
     if (res.data.code !== 200) {
       ElMessage.warning(res.data.msg)
       return
     }
-    ElMessage.success("更新成功")
-    onloadAuth()
-    showEdit.value = false
+    ElMessage.success('Post published')
+    postForm.title = ''
+    postForm.picture = ''
+    composeVisible.value = false
+    loadPosts()
+  }).finally(() => {
+    saving.value = false
   })
 }
 
-const handleUploadIcon = (res) => {
-  if (res.code !== 200) {
-    ElMessage.warning("文件上传失败")
-    return
-  }
-  updateUser.value.icon = res.data
+const refreshPosts = () => {
+  loadPosts()
 }
 
-const toHandlerClose = () => {
-  if (showEdit.value) {
-    showEdit.value = false
-    return
-  }
-  showDetail.value = false
+const previewPost = (item) => {
+  preview.value = item
+  previewVisible.value = true
 }
 
-const toDetail = () => {
-  showEdit.value = false
-  showDetail.value = true
-}
-
-const sendMusicHandler = () => {
-  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-    mediaRecorder = new MediaRecorder(stream)
-    recordedBlobs = []
-    mediaRecorder.ondataavailable = event => {
-      if (event.data && event.data.size > 0) {
-        recordedBlobs.push(event.data)
-      }
-    }
-    mediaRecorder.start()
-    sendMusic.value = true
-  }).catch(() => {
-    ElMessage.warning("暂无录音权限或设备不支持")
-  })
-}
-
-const handlerSubmitMusic = () => {
-  if (!mediaRecorder) return
-  mediaRecorder.stop()
-  setTimeout(() => {
-    let superBuffer = new Blob(recordedBlobs, { type: 'audio/wav' })
-    const formData = new FormData()
-    formData.append("file", superBuffer, new Date().getTime() + '.wav')
-
-    request.post('/file/upload', formData, { headers: { "Content-Type": "multipart/form-data" } }).then(res => {
-      if (res.data.code !== 200) {
-        ElMessage.warning("文件上传失败")
-        return
-      }
-      sendComment(res.data.data, "music")
-      sendMusic.value = false
-    })
-  }, 300)
-}
-
-const cancelMusic = () => {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop()
-  }
-  sendMusic.value = false
-}
-
-const handlerDelete = (room) => {
-  ElMessageBox.confirm(`确认删除该聊天室吗?`, '提示', {
-    confirmButtonText: '确认',
-    cancelButtonText: '取消',
-    type: "warning",
-  }).then(() => {
-    request.get(`/room/delete`, { params: { id: room.id } }).then(() => {
-      if (selectRoom.value.id === room.id) selectRoom.value = {}
-      ElMessage.success("删除成功")
-      onloadRoom()
-    })
-  })
-}
-
-const handlerSubmitRoom = () => {
-  roomFormRef.value.validate((valid) => {
-    if (!valid) return
-    request.post("/room/save", roomForm.value).then(res => {
-      if (res.data.code === 400) {
-        ElMessage.warning(res.data.msg)
-        return
-      }
-      ElMessage.success("添加成功")
-      showRoomFlag.value = false
-      onloadRoom()
-    })
-  })
-}
-
-const handlerShowEditRoom = () => {
-  roomForm.value = {}
-  showRoomFlag.value = true
-}
-
-const handleUploadChat = (res) => {
-  if (res.code !== 200) {
-    ElMessage.warning("文件上传失败")
-    return
-  }
-  sendComment(res.data, "img")
-}
-
-const sendHandler = () => {
-  if (!content.value) {
-    ElMessage.warning("请输入内容")
-    return
-  }
-  sendComment(content.value, "txt")
-  content.value = ""
-}
-
-const sendComment = (content, type) => {
-  const comment = {
-    content: content,
-    roomId: selectRoom.value.id,
-    type: type,
-  }
-  request.post("/comment/save", comment).then(() => {
-    ElMessage.success("发送成功")
-    // 立即刷新一次
-    fetchComments()
-  })
-}
-
-const loginOut = () => {
-  request.get(`/user/loginOut`).then(() => {
-    ElMessage.success('退出成功')
-    setTimeout(() => {
-      router.push("/login")
-    }, 800)
-  })
-}
-
-const showRoom = (room) => {
-  showDetail.value = false
-  selectRoom.value = room
-  commentData.value = [] // 切换房间先清空
-  fetchComments()
-}
-
-const onloadAuth = () => {
-  request.get("/user/current").then(res => {
-    if (res.data.code !== 200) {
-      ElMessage.warning("用户未登录")
-      setTimeout(() => {
-        router.push("/login")
-      }, 800)
-      return
-    }
-    user.value = res.data.data
-    updateUser.value = JSON.parse(JSON.stringify(user.value))
-  })
-}
-
-const onloadRoom = () => {
-  request.get("/room/self/list").then(res => selfRoom.value = res.data.data)
-  request.get("/room/list").then(res => roomData.value = res.data.data)
-}
-
-const fetchComments = () => {
-  if (!selectRoom.value.id) return
-  request.get("/comment/list", { params: { roomId: selectRoom.value.id } }).then(res => {
-    commentData.value = res.data.data
-    // 自动滚动到底部 (可选优化)
-    // nextTick(() => {
-    //   if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
-    // })
-  })
+const goChat = () => {
+  router.push('/chat')
 }
 
 onMounted(() => {
-  onloadAuth()
-  onloadRoom()
-  // 轮询消息
-  timer = setInterval(fetchComments, 1000) // 稍微放宽一点时间，300ms太频繁
-})
-
-onUnmounted(() => {
-  if (timer) clearInterval(timer)
+  loadUser()
+  loadPosts()
 })
 </script>
 
 <style scoped>
-@import "../assets/css/indexX.css";
-
-.friendUser,
-.icon,
-.avatar-uploader-icon {
-  border-radius: 50%;
-  border: 1px solid #c0c0c0;
-}
-
-.friendUser {
-  height: 40px;
-  width: 40px;
-}
-
-.icon,
-.avatar-uploader-icon {
-  height: 100px;
-  width: 100px;
-  line-height: 100px;
-  text-align: center;
-  font-size: 30px;
-  color: #8c939d;
-}
-
-.userList {
-  height: calc(100vh - 250px);
-  overflow-y: auto;
-}
-
-.chat-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-  background-color: #f5f7fa;
-}
-
-.sidebar-tabs :deep(.el-tabs__content) {
-  height: calc(100% - 40px);
+.feed-page {
+  min-height: 100vh;
+  position: relative;
   overflow: hidden;
+  color: var(--ease-ink);
+}
+
+.feed-backdrop {
+  position: absolute;
+  inset: -20% -10% auto auto;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.25), rgba(255, 255, 255, 0));
+  filter: blur(0px);
+  pointer-events: none;
+}
+
+.feed-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 40px 60px 80px;
+}
+
+.compose-card {
+  background: var(--ease-panel);
+  border-radius: var(--ease-radius);
+  padding: 28px;
+  box-shadow: var(--ease-shadow);
+  animation: floatIn 0.6s ease-out;
+}
+
+.panel-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ease-ink);
+  font-family: "DM Serif Display", "Space Grotesk", serif;
+}
+
+.panel-sub {
+  margin-top: 6px;
+  color: var(--ease-muted);
+}
+
+.compose-form {
+  margin-top: 20px;
+}
+
+.cover-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cover-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--ease-line);
+}
+
+.compose-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feed-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ease-ink);
+}
+
+.feed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.post-card {
+  background: var(--ease-panel);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06),
+  0 2px 4px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  min-height: 240px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.post-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ease-accent) 0%, var(--ease-brand) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12),
+  0 4px 8px rgba(15, 23, 42, 0.08);
+  border-color: rgba(20, 184, 166, 0.3);
+}
+
+.post-card:hover::before {
+  opacity: 1;
+}
+
+.post-cover {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.post-cover img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.post-card:hover .post-cover img {
+  transform: scale(1.05);
+}
+
+.post-cover-empty {
+  height: 120px;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.cover-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 30%, rgba(20, 184, 166, 0.15) 0%, transparent 50%),
+  radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+}
+
+.post-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  background: linear-gradient(to bottom, var(--ease-panel) 0%, rgba(248, 250, 252, 0.5) 100%);
+}
+
+.post-title {
+  font-size: 18px;
+  color: var(--ease-ink);
+  font-weight: 600;
+  line-height: 1.4;
+  font-family: "DM Serif Display", "Space Grotesk", serif;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.2s ease;
+}
+
+.post-card:hover .post-title {
+  color: var(--ease-accent);
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ease-muted);
+  font-size: 13px;
+  padding-top: 4px;
+}
+
+.post-meta span:first-child {
+  font-weight: 500;
+  color: var(--ease-ink);
+  opacity: 0.7;
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--ease-accent);
+}
+
+.post-actions {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.preview-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview-image {
+  width: 100%;
+  border-radius: 12px;
+  max-height: 260px;
+  object-fit: cover;
+}
+
+.preview-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ease-ink);
+  font-family: "DM Serif Display", "Space Grotesk", serif;
+}
+
+.preview-meta {
+  color: var(--ease-muted);
+}
+
+.feed-grid {
+  animation: riseIn 0.7s ease-out;
+}
+
+.post-card {
+  animation: cardFadeIn 0.5s ease-out backwards;
+}
+
+.post-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.post-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.post-card:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.post-card:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.post-card:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.post-card:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes floatIn {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes riseIn {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .feed-content {
+    padding: 20px;
+  }
 }
 </style>

@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/comment")
@@ -24,26 +27,46 @@ public class CommentController {
     private UserMapper userMapper;
 
     @PostMapping("/save")
-    public R save(@RequestBody Comment comment) {
+    public R<Void> save(@RequestBody Comment comment) {
+        if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
+            return R.fail("Message content cannot be empty");
+        }
+        
+        if (comment.getRoomId() == null) {
+            return R.fail("Room ID is required");
+        }
+        
         comment.setAccount(AuthUtil.getUserAccount());
         comment.setCreateTime(new Date());
         commentMapper.insert(comment);
-        return R.success("");
+        return R.success("Message sent successfully");
     }
 
     @GetMapping("/list")
-    public R list(Comment comment) {
+    public R<List<Comment>> list(@RequestParam Integer roomId) {
+        if (roomId == null) {
+            return R.fail("Room ID is required");
+        }
+        
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Comment::getRoomId, comment.getRoomId()).orderByAsc(Comment::getCreateTime);
+        wrapper.eq(Comment::getRoomId, roomId).orderByAsc(Comment::getCreateTime);
 
         List<Comment> comments = commentMapper.selectList(wrapper);
 
-        for (Comment item : comments) {
-            LambdaQueryWrapper<User> userWrapper = new LambdaQueryWrapper<>();
-            userWrapper.eq(User::getAccount, item.getAccount());
+        Set<String> accounts = comments.stream()
+                .map(Comment::getAccount)
+                .filter(account -> account != null && !account.isBlank())
+                .collect(Collectors.toSet());
 
-            User user = userMapper.selectOne(userWrapper);
-            item.setIcon(user.getIcon());
+        if (!accounts.isEmpty()) {
+            LambdaQueryWrapper<User> userWrapper = new LambdaQueryWrapper<>();
+            userWrapper.in(User::getAccount, accounts);
+            Map<String, String> iconByAccount = userMapper.selectList(userWrapper).stream()
+                    .collect(Collectors.toMap(User::getAccount, User::getIcon, (a, b) -> a));
+
+            for (Comment item : comments) {
+                item.setIcon(iconByAccount.get(item.getAccount()));
+            }
         }
 
         return R.data(comments);

@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080', // 后端 Spring Boot 的地址
+        target: 'http://localhost:8081', // Backend Spring Boot server address
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '') 
       }

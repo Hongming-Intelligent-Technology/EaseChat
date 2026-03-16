@@ -17,34 +17,47 @@ public class RoomController {
     @Autowired
     private RoomMapper mapper;
 
-    @RequestMapping("/self/list")
-    @ResponseBody
-    public R selfList(Room room) {
+    @GetMapping("/self/list")
+    public R<List<Room>> selfList() {
         LambdaQueryWrapper<Room> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Room::getAccount, AuthUtil.getUserAccount());
         List<Room> list = mapper.selectList(wrapper);
         return R.data(list);
     }
 
-    @RequestMapping("/list")
-    @ResponseBody
-    public R list(Room room) {
+    @GetMapping("/list")
+    public R<List<Room>> list() {
         LambdaQueryWrapper<Room> wrapper = new LambdaQueryWrapper<>();
         List<Room> list = mapper.selectList(wrapper);
         return R.data(list);
     }
 
-    @RequestMapping("/delete")
-    public R userDelete(@RequestParam("id") Integer id) {
+    @GetMapping("/delete")
+    public R<Void> userDelete(@RequestParam("id") Integer id) {
+        if (id == null) {
+            return R.fail("Room ID is required");
+        }
+        
+        Room room = mapper.selectById(id);
+        if (room == null) {
+            return R.fail("Chat room not found");
+        }
+        if (!AuthUtil.getUserAccount().equals(room.getAccount())) {
+            return R.fail("Unauthorized to delete this chat room");
+        }
         mapper.deleteById(id);
-        return R.success("操作成功");
+        return R.success("Operation successful");
     }
 
-    @RequestMapping("/save")
-    public R save(@RequestBody Room room) {
+    @PostMapping("/save")
+    public R<Void> save(@RequestBody Room room) {
+        if (room.getName() == null || room.getName().trim().isEmpty()) {
+            return R.fail("Room name cannot be empty");
+        }
+        
         room.setId(null);
         room.setAccount(AuthUtil.getUserAccount());
         mapper.insert(room);
-        return R.success("操作成功");
+        return R.success("Operation successful");
     }
 }
