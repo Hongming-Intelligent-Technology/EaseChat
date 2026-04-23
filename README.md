@@ -72,7 +72,7 @@ chmod +x start.sh
 - **ORM**: MyBatis-Plus 3.5.8
 - **安全**: Spring Security Crypto (BCrypt)
 - **会话**: Session-based Authentication
-- **服务端口**: 8080
+- **服务端口**: 8081
 
 ## 📦 环境要求
 
@@ -113,14 +113,10 @@ cd easechat
 mvn clean package
 
 # 运行后端服务
-# Windows
-mvnw.cmd spring-boot:run
-
-# Linux/Mac
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
-后端服务将在 `http://localhost:8080` 启动
+后端服务将在 `http://localhost:8081` 启动
 
 ### 3. 前端设置
 
@@ -191,19 +187,19 @@ Easechat/
 ### 用户相关
 - `POST /api/user/register` - 用户注册
 - `POST /api/user/login` - 用户登录
-- `GET /api/user/profile` - 获取用户资料
-- `PUT /api/user/profile` - 更新用户资料
+- `GET /api/user/current` - 获取当前用户信息
+- `POST /api/user/update` - 更新用户资料
 
 ### 聊天室相关
 - `GET /api/room/list` - 获取聊天室列表
-- `POST /api/room/create` - 创建新聊天室
-- `GET /api/room/{id}/messages` - 获取聊天室消息
-- `POST /api/room/{id}/message` - 发送消息
+- `GET /api/room/self/list` - 获取我创建的聊天室
+- `POST /api/room/save` - 创建新聊天室
+- `POST /api/room/delete` - 删除聊天室
 
 ### 博客相关
 - `GET /api/blog/list` - 获取博客列表
-- `POST /api/blog/create` - 创建博客
-- `DELETE /api/blog/{id}` - 删除博客
+- `POST /api/blog/save` - 创建博客
+- `POST /api/blog/delete` - 删除博客
 
 ## 🐛 故障排除
 

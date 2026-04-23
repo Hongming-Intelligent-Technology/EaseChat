@@ -32,11 +32,11 @@ A modern multi-user real-time chat application that provides an intuitive user i
 - **Development Port**: 5173
 
 ### Backend
-- **Framework**: Spring Boot 3.2.5
+- **Framework**: Spring Boot 3.4.2
 - **Java Version**: 21
-- **Database**: MySQL 5.7+
+- **Database**: MySQL 8.x
 - **ORM**: MyBatis-Plus
-- **Server Port**: 8080
+- **Server Port**: 8081
 
 ## 📦 Requirements
 
@@ -77,14 +77,10 @@ cd easechat
 mvn clean package
 
 # Run the backend server
-# Windows
-mvnw.cmd spring-boot:run
-
-# Linux/Mac
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
-The backend server will start on `http://localhost:8080`
+The backend server will start on `http://localhost:8081`
 
 ### 3. Frontend Setup
 
@@ -155,19 +151,19 @@ Easechat/
 ### User Related
 - `POST /api/user/register` - User registration
 - `POST /api/user/login` - User login
-- `GET /api/user/profile` - Get user profile
-- `PUT /api/user/profile` - Update user profile
+- `GET /api/user/current` - Get current user info
+- `POST /api/user/update` - Update user profile
 
 ### Chat Room Related
 - `GET /api/room/list` - Get chat room list
-- `POST /api/room/create` - Create new chat room
-- `GET /api/room/{id}/messages` - Get chat room messages
-- `POST /api/room/{id}/message` - Send message
+- `GET /api/room/self/list` - Get my chat rooms
+- `POST /api/room/save` - Create new chat room
+- `POST /api/room/delete` - Delete chat room
 
 ### Blog Related
 - `GET /api/blog/list` - Get blog list
-- `POST /api/blog/create` - Create blog
-- `DELETE /api/blog/{id}` - Delete blog
+- `POST /api/blog/save` - Create blog
+- `POST /api/blog/delete` - Delete blog
 
 ## 🐛 Troubleshooting
 

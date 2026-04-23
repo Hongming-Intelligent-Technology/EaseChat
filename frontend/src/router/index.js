@@ -1,4 +1,5 @@
 import {createRouter, createWebHistory} from 'vue-router'
+import request from '../utils/request'
 
 const routes = [
   {
@@ -28,11 +29,21 @@ const router = createRouter({
   routes
 })
 
-// Simple route guard example (enable as needed)
-// router.beforeEach((to, from, next) => {
-//   const isAuthenticated = localStorage.getItem('user'); // Assuming login info is saved in localStorage
-//   if (to.name !== 'Login' && to.name !== 'Register' && !isAuthenticated) next({ name: 'Login' })
-//   else next()
-// })
+router.beforeEach(async (to) => {
+  if (to.name === 'Login' || to.name === 'Register') {
+    return true
+  }
+
+  try {
+    const res = await request.get('/user/current')
+    if (res.data?.code === 200) {
+      return true
+    }
+  } catch {
+    // Redirect handled below.
+  }
+
+  return {name: 'Login'}
+})
 
 export default router

@@ -32,8 +32,9 @@ public class RoomController {
         return R.data(list);
     }
 
-    @GetMapping("/delete")
-    public R<Void> userDelete(@RequestParam("id") Integer id) {
+    @PostMapping("/delete")
+    public R<Void> userDelete(@RequestBody Room request) {
+        Integer id = request.getId();
         if (id == null) {
             return R.fail("Room ID is required");
         }

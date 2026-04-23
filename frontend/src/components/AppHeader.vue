@@ -83,10 +83,24 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .user-chip {
   font-size: 13px;
+  min-height: 36px;
+}
+
+.user-name {
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-actions :deep(.el-button) {
+  min-height: 36px;
 }
 
 @media (max-width: 1024px) {
@@ -95,6 +109,11 @@ const handleLogout = () => {
     align-items: flex-start;
     gap: 16px;
     padding: 20px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 }
 

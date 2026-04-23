@@ -142,9 +142,16 @@ const registerHandler = () => {
   gap: 14px;
 }
 
+.auth-form :deep(.el-input__wrapper),
+.auth-form :deep(.el-select__wrapper),
+.auth-form :deep(.el-textarea__inner) {
+  min-height: 42px;
+}
+
 .auth-primary,
 .auth-secondary {
   width: 100%;
+  min-height: 42px;
 }
 
 .icon,
@@ -159,6 +166,10 @@ const registerHandler = () => {
   color: var(--ease-muted);
 }
 
+.icon {
+  object-fit: cover;
+}
+
 .auth-glow {
   position: absolute;
   width: 420px;
@@ -168,5 +179,15 @@ const registerHandler = () => {
   bottom: 5%;
   left: 8%;
   z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .auth-card {
+    padding: 28px 20px;
+  }
+
+  .auth-title {
+    font-size: 26px;
+  }
 }
 </style>

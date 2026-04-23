@@ -75,6 +75,7 @@ const handlerLogin = () => {
   place-items: center;
   position: relative;
   overflow: hidden;
+  padding: 32px 20px;
 }
 
 .auth-card {
@@ -106,9 +107,14 @@ const handlerLogin = () => {
   gap: 16px;
 }
 
+.auth-form :deep(.el-input__wrapper) {
+  min-height: 42px;
+}
+
 .auth-primary,
 .auth-secondary {
   width: 100%;
+  min-height: 42px;
 }
 
 .auth-glow {
@@ -121,5 +127,15 @@ const handlerLogin = () => {
   right: 10%;
   filter: blur(0px);
   z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .auth-card {
+    padding: 28px 20px;
+  }
+
+  .auth-title {
+    font-size: 26px;
+  }
 }
 </style>

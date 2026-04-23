@@ -2,6 +2,7 @@
   <div class="chat-user-panel">
     <div class="user-avatar-section">
       <img v-if="user.icon" :src="user.icon" class="avatar icon">
+      <el-avatar v-else class="avatar-fallback">{{ (user.account || 'U').slice(0, 1).toUpperCase() }}</el-avatar>
     </div>
     <div class="user-info">
       <div class="user-account">Account: {{ user.account }}</div>
@@ -49,6 +50,7 @@ const handleLogout = () => {
   display: flex;
   justify-content: center;
   margin-top: 30px;
+  min-height: 100px;
 }
 
 .user-info {
@@ -77,5 +79,12 @@ const handleLogout = () => {
   width: 100px;
   border-radius: 50%;
   border: 1px solid var(--ease-line);
+  object-fit: cover;
+}
+
+.avatar-fallback {
+  height: 100px;
+  width: 100px;
+  font-size: 32px;
 }
 </style>

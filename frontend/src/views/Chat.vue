@@ -373,7 +373,7 @@ const handlerDelete = (room) => {
     cancelButtonText: 'Cancel',
     type: "warning",
   }).then(() => {
-    request.get(`/room/delete`, {params: {id: room.id}}).then(() => {
+    request.post(`/room/delete`, {id: room.id}).then(() => {
       if (selectRoom.value.id === room.id) selectRoom.value = {}
       ElMessage.success("Deleted successfully")
       onloadRoom()
@@ -485,14 +485,15 @@ onUnmounted(() => {
 
 <style scoped>
 .chat-page {
-  min-height: 100vh;
-  padding: 40px 20px 60px;
+  min-height: 100dvh;
+  padding: 28px 20px 40px;
 }
 
 .main-box {
   width: min(1200px, 92vw);
   margin: 0 auto;
-  height: calc(100vh - 140px);
+  height: calc(100dvh - 84px);
+  min-height: 640px;
   display: flex;
 }
 
@@ -514,6 +515,7 @@ onUnmounted(() => {
   border-right: 1px solid var(--ease-line);
   display: flex;
   flex-flow: column;
+  min-height: 0;
   background: rgba(248, 250, 252, 0.7);
 }
 
@@ -522,6 +524,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
   background: var(--ease-surface);
 }
 
@@ -548,8 +551,9 @@ onUnmounted(() => {
 }
 
 .userList {
-  height: calc(100vh - 250px);
+  height: 100%;
   overflow-y: auto;
+  padding-right: 4px;
 }
 
 .chat-content {
@@ -559,12 +563,46 @@ onUnmounted(() => {
   background-color: var(--ease-surface);
 }
 
+.chat-main :deep(.el-input__wrapper),
+.chat-main :deep(.el-select__wrapper) {
+  min-height: 40px;
+}
+
+.chat-main :deep(.el-button) {
+  min-height: 36px;
+}
+
+.sidebar-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-tabs :deep(.el-tabs__header) {
+  margin: 0 0 10px;
+}
+
 .sidebar-tabs :deep(.el-tabs__content) {
-  height: calc(100% - 40px);
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
+.sidebar-tabs :deep(.el-tab-pane) {
+  height: 100%;
+}
+
 @media (max-width: 1024px) {
+  .chat-page {
+    padding: 18px 12px 24px;
+  }
+
+  .main-box {
+    width: 100%;
+    height: auto;
+    min-height: calc(100dvh - 42px);
+  }
+
   .chat-shell {
     flex-direction: column;
   }
@@ -573,6 +611,7 @@ onUnmounted(() => {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--ease-line);
+    max-height: 40dvh;
   }
 }
 </style>
